@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Platform,Animated } from "react-native";
 
 export default function ReadMore({ title, content, lineLimit = null }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMore, setIsMore] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newLine, setNewLine] = useState(null);
   const [totalLine, setTotalLine] = useState(null);
   const contentRef = useRef();
+  const fadeAnimate = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     if (Platform.OS === 'web') {
@@ -25,6 +27,14 @@ export default function ReadMore({ title, content, lineLimit = null }) {
       setIsMore(true);
       setNewLine(lineLimit);
     }
+    setIsLoading(false)
+
+    Animated.timing(fadeAnimate,{
+      toValue:1,
+      duration:300,
+      useNativeDriver:true,
+    }).start();
+
   }, [totalLine])
 
   const onTextLayout = (e) => {
@@ -35,7 +45,7 @@ export default function ReadMore({ title, content, lineLimit = null }) {
   }
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container,{opacity:isLoading ? 0 : fadeAnimate}]}>
       <View style={styles.titleArea}>
         <Text style={styles.title}>{title}</Text>
       </View>
@@ -47,7 +57,7 @@ export default function ReadMore({ title, content, lineLimit = null }) {
           <TouchableOpacity onPress={() => setIsOpen(!isOpen)}><Text style={styles.buttonText}>{isOpen ? "Read less" : "Read more"}</Text></TouchableOpacity>
         </View>
       ) : null}
-    </View>
+    </Animated.View>
   )
 }
 
